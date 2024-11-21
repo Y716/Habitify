@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+# Ignore specific Gradle-related files
+gradle/wrapper/gradle-wrapper.properties
+gradle/libs.versions.toml
