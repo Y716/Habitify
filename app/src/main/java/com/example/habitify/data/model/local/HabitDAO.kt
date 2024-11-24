@@ -9,11 +9,8 @@ import androidx.room.Query
 
 @Dao
 interface HabitDAO {
-    @Query("SELECT * FROM habits ORDER BY createdAt DESC")
+    @Query("SELECT * FROM habits")
     fun getAllHabits(): LiveData<List<Habit>>
-
-    @Query("SELECT * FROM habits WHERE date = :date ORDER BY createdAt DESC")
-    suspend fun getHabitsForDate(date: String): List<Habit>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHabit(habit: Habit)
@@ -21,6 +18,24 @@ interface HabitDAO {
     @Delete
     suspend fun deleteHabit(habit: Habit)
 
-    @Query("UPDATE habits SET isCompleted = :isCompleted WHERE id = :id")
+    // HabitStatus
+    @Query("SELECT * FROM habit_status WHERE date = :date")
+    fun getHabitStatusForDate(date: String): LiveData<List<HabitStatus>>
+
+    @Query("UPDATE habit_status SET isCompleted = :isCompleted WHERE id = :id")
     suspend fun updateHabitStatus(id: Int, isCompleted: Boolean)
+
+    // Get all habits synchronously
+    @Query("SELECT * FROM habits")
+    suspend fun getAllHabitsSync(): List<Habit>
+
+    // Get all statuses for a specific date synchronously
+    @Query("SELECT * FROM habit_status WHERE date = :date")
+    suspend fun getHabitStatusForDateSync(date: String): List<HabitStatus>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHabitAndGetId(habit: Habit): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHabitStatus(habitStatus: HabitStatus)
 }

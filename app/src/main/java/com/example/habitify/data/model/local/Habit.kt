@@ -17,10 +17,6 @@ data class Habit @RequiresApi(Build.VERSION_CODES.O) constructor(
     val id: Int = 0,
     @ColumnInfo(name = "title")
     val title: String,
-    @ColumnInfo(name = "isCompleted")
-    val isCompleted: Boolean,
-    @ColumnInfo(name = "date")
-    val date: String = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date()), // Use SimpleDateFormat
     @ColumnInfo(name = "createdAt")
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis() // Default value for new rows
 )

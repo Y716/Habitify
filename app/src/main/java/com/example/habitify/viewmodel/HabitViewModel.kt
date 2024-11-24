@@ -6,90 +6,53 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.habitify.data.model.local.Habit
 import com.example.habitify.data.model.local.HabitRepository
+import com.example.habitify.data.model.local.HabitStatus
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
 
-    private val _habitsForSelectedDate = MutableLiveData<List<Habit>>()
-    val habitsForSelectedDate: LiveData<List<Habit>> = _habitsForSelectedDate
 
     // LiveData for all habits fetched from the repository
-    val allHabits: LiveData<List<Habit>> = repository.allHabits
+    val allHabits: LiveData<List<Habit>> = repository.getAllHabits()
 
-    // Daily progress (can be calculated based on habits or set manually)
-    private val _dailyProgress = MutableLiveData(0.0f) // Default progress
-    val dailyProgress: LiveData<Float> get() = _dailyProgress
-
-    /**
-     * Add a new habit to the repository.
-     */
-    fun addHabit(habit: Habit) {
-        viewModelScope.launch {
-            repository.insert(habit)
-            calculateDailyProgress() // Recalculate progress after adding a habit
-        }
+    fun getHabitsForDate(date: LocalDate): LiveData<List<Pair<Habit, HabitStatus?>>> {
+        return repository.getHabitsForDate(date)
     }
 
-    /**
-     * Delete a habit from the repository.
-     */
-    fun deleteHabit(habit: Habit) {
-        viewModelScope.launch {
-            repository.delete(habit)
-            calculateDailyProgress() // Recalculate progress after deleting a habit
-        }
-    }
+    // LiveData to hold the habits and their statuses for the selected date
+    private val _habitsForDate = MutableLiveData<List<Pair<Habit, HabitStatus?>>>()
+    val habitsForDate: LiveData<List<Pair<Habit, HabitStatus?>>>
+        get() = _habitsForDate
 
-    /**
-     * Update the completion status of a habit.
-     */
-    fun updateHabitStatus(habitId: Int, isCompleted: Boolean) {
-        viewModelScope.launch {
-            repository.updateHabitStatus(habitId, isCompleted)
-            calculateDailyProgress() // Recalculate progress after updating a habit
-        }
-    }
-
-    /**
-     * Sync habits from a remote source (optional).
-     */
-    fun syncHabits() {
-        viewModelScope.launch {
-            repository.syncHabits()
-            calculateDailyProgress() // Ensure progress is updated after syncing
-        }
-    }
-
-    // Load habits for a specific date
+    // Load habits for the selected date
     fun loadHabitsForDate(date: LocalDate) {
         viewModelScope.launch {
-            val habits = repository.getHabitsForDate(date) // Replace with your logic to filter by date
-            _habitsForSelectedDate.postValue(habits)
+            val habitsWithStatus = repository.getHabitsForDateSync(date) // Fetch from repository
+            _habitsForDate.postValue(habitsWithStatus) // Update LiveData
         }
     }
 
-    // Update habit status for a specific date
-    fun updateHabitForDate(date: LocalDate, habitId: Int, isCompleted: Boolean) {
+    fun addHabit(title: String) {
         viewModelScope.launch {
-            repository.updateHabitStatus(habitId, isCompleted) // Adjust logic if specific date is needed
-            loadHabitsForDate(date) // Refresh habits for the selected date
+            repository.insertHabit(Habit(title = title))
         }
     }
 
-    /**
-     * Calculate daily progress based on completed habits.
-     */
-    private fun calculateDailyProgress() {
+    fun toggleHabitCompletion(habitId: Int, date: LocalDate, isCompleted: Boolean) {
         viewModelScope.launch {
-            val habits = repository.allHabits.value ?: emptyList()
-            val completedCount = habits.count { it.isCompleted }
-            val totalCount = habits.size
-            if (totalCount > 0) {
-                _dailyProgress.value = completedCount.toFloat() / totalCount
-            } else {
-                _dailyProgress.value = 0f // Reset progress if there are no habits
-            }
+            repository.updateHabitStatus(habitId, date.toString(), isCompleted)
         }
     }
+
+    fun addHabitWithStatus(title: String, date: String) {
+        viewModelScope.launch {
+            // Add the habit to the habits table
+            val habitId = repository.addHabitAndGetId(Habit(title = title))
+
+            // Add the status for the selected date
+            repository.addHabitStatus(habitId, date, isCompleted = false)
+        }
+    }
+
 }

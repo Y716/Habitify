@@ -20,7 +20,7 @@ import com.example.habitify.data.model.local.Habit
 fun AddHabitPage(
     navController: NavController,
     viewModel: HabitViewModel,
-    selectedDate: String // Add selectedDate parameter
+    selectedDate: String // Use selectedDate as a parameter
 ) {
     var habitTitle by remember { mutableStateOf("") } // State for the habit title
 
@@ -49,12 +49,10 @@ fun AddHabitPage(
         Button(
             onClick = {
                 if (habitTitle.isNotBlank()) {
-                    val newHabit = Habit(
-                        title = habitTitle,
-                        isCompleted = false,
-                        date = selectedDate.toString() // Use the selected date
-                    )
-                    viewModel.addHabit(newHabit)
+                    // Add habit to the shared habits table
+                    viewModel.addHabitWithStatus(habitTitle, selectedDate)
+
+                    // Navigate back to the homepage
                     navController.navigate("homepage")
                 }
             },
@@ -64,3 +62,4 @@ fun AddHabitPage(
         }
     }
 }
+
