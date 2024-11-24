@@ -13,6 +13,8 @@ import com.example.habitify.pages.AddHabitPage
 import com.example.habitify.pages.HomePage
 import com.example.habitify.pages.LoginPage
 import com.example.habitify.pages.RegisterPage
+import com.example.habitify.pages.StatisticsPage
+//import com.example.habitify.pages.StatisticPage
 import com.example.habitify.viewmodel.HabitViewModel
 import java.time.LocalDate
 
@@ -41,8 +43,9 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, v
                 ?: LocalDate.now().toString() // Default to today's date if null
             AddHabitPage(navController = navController, viewModel = viewModel, selectedDate = selectedDate)
         }
-        composable("statistics_page"){
-            HomePage(modifier, navController, authViewModel, viewModel)
+        composable("statistics_page") {
+//            StatisticPage(navController, viewModel)
+            StatisticsPage(viewModel, navController)
         }
         composable("pomodoro_clock"){
             HomePage(modifier, navController, authViewModel, viewModel)

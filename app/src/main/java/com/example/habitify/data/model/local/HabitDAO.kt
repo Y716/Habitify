@@ -45,4 +45,97 @@ interface HabitDAO {
 
     @Update
     suspend fun updateHabitStatus(habitStatus: HabitStatus)
+
+    @Query("""
+        SELECT date, 
+               COUNT(habitId) AS total, 
+               SUM(CASE WHEN isCompleted THEN 1 ELSE 0 END) AS completed
+        FROM habit_status
+        WHERE date BETWEEN :startDate AND :endDate
+        GROUP BY date
+        ORDER BY date ASC
+    """)
+    fun getMonthlyStatistics(startDate: String, endDate: String): LiveData<List<DateStatistic>>
+
+    @Query("""
+        SELECT h.title AS habitTitle, 
+               COUNT(*) AS completedCount
+        FROM habit_status hs
+        INNER JOIN habits h ON hs.habitId = h.id
+        WHERE hs.isCompleted = 1 AND hs.date BETWEEN :startDate AND :endDate
+        GROUP BY hs.habitId
+    """)
+    fun getWeeklyStatistics(startDate: String, endDate: String): LiveData<List<HabitWeeklyStat>>
+
+
+    @Query("""
+        SELECT h.title AS habitTitle, COUNT(*) AS completionCount
+        FROM habit_status hs
+        INNER JOIN habits h ON hs.habitId = h.id
+        WHERE hs.isCompleted = 1
+        GROUP BY h.title
+        ORDER BY completionCount DESC
+        LIMIT 3
+    """)
+    fun getTopHabits(): LiveData<List<TopHabit>>
+
+
+
+
+    @Query("SELECT * FROM habit_status")
+    fun getAllHabitStatuses(): LiveData<List<HabitStatus>>
+
+    @Query("""
+        SELECT COUNT(*) 
+        FROM (
+            SELECT date
+            FROM habit_status
+            WHERE date < DATE('now')
+            GROUP BY date
+            HAVING COUNT(habitId) = SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END)
+            ORDER BY date DESC
+        ) streak_days
+        WHERE streak_days.date >= (
+            SELECT MIN(date)
+            FROM (
+                SELECT date, 
+                       COUNT(habitId) AS totalHabits,
+                       SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END) AS completedHabits
+                FROM habit_status
+                WHERE date < DATE('now')
+                GROUP BY date
+                HAVING COUNT(habitId) != SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END)
+                ORDER BY date DESC
+                LIMIT 1
+            ) non_streak_date
+        )
+    """)
+    fun getTotalStreakDays(): LiveData<Int>
+
+
+
+
+
+
+    // Best streak (jumlah hari berturut-turut terbaik)
+//    @Query("""
+//        SELECT MAX(streak)
+//        FROM (
+//            SELECT date, ROW_NUMBER() OVER (ORDER BY date) -
+//            ROW_NUMBER() OVER (PARTITION BY isCompleted ORDER BY date) AS streak_group
+//            FROM habit_status
+//            WHERE isCompleted = 1
+//        ) AS grouped
+//        GROUP BY streak_group
+//    """)
+//    fun getBestStreak(): LiveData<Int>
+
+    // Total jumlah kebiasaan yang selesai
+    @Query("""
+        SELECT COUNT(*) 
+        FROM habit_status
+        WHERE isCompleted = 1
+    """)
+    fun getTotalHabitsDone(): LiveData<Int>
+
 }

@@ -86,4 +86,32 @@ class HabitRepository(private val habitDAO: HabitDAO) {
 
         return mediator
     }
+
+    fun getMonthlyStatistics(startDate: String, endDate: String): LiveData<List<DateStatistic>> {
+        return habitDAO.getMonthlyStatistics(startDate, endDate)
+    }
+
+    fun getWeeklyStatistics(startDate: String, endDate: String): LiveData<List<HabitWeeklyStat>> {
+        return habitDAO.getWeeklyStatistics(startDate, endDate)
+    }
+
+
+    fun getTopHabits(): LiveData<List<TopHabit>> {
+        return habitDAO.getTopHabits()
+    }
+
+    // Mendapatkan total streak
+    fun getTotalStreak(): LiveData<Int> {
+        return habitDAO.getTotalStreakDays()
+    }
+
+//    // Mendapatkan best streak
+//    fun getBestStreak(): LiveData<Int> {
+//        return habitDAO.getBestStreak()
+//    }
+
+    // Mendapatkan total kebiasaan selesai
+    fun getTotalHabitsDone(): LiveData<Int> {
+        return habitDAO.getTotalHabitsDone()
+    }
 }

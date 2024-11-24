@@ -1,12 +1,17 @@
 package com.example.habitify.viewmodel
 
+import android.annotation.SuppressLint
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.habitify.data.model.local.DateStatistic
 import com.example.habitify.data.model.local.Habit
 import com.example.habitify.data.model.local.HabitRepository
 import com.example.habitify.data.model.local.HabitStatus
+import com.example.habitify.data.model.local.HabitStatusQueryResult
+import com.example.habitify.data.model.local.HabitWeeklyStat
+import com.example.habitify.data.model.local.TopHabit
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -33,6 +38,7 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
         }
     }
 
+    @SuppressLint("NewApi")
     fun addHabit(title: String) {
         viewModelScope.launch {
             repository.insertHabit(Habit(title = title))
@@ -46,6 +52,7 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
     }
 
 
+    @SuppressLint("NewApi")
     fun addHabitWithStatus(title: String, date: String) {
         viewModelScope.launch {
             // Add the habit to the habits table
@@ -56,4 +63,31 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
         }
     }
 
+    fun getMonthlyStatistics(startDate: String, endDate: String): LiveData<List<DateStatistic>> {
+        return repository.getMonthlyStatistics(startDate, endDate)
+    }
+
+    fun getWeeklyStatistics(startDate: LocalDate, endDate: LocalDate): LiveData<List<HabitWeeklyStat>> {
+        return repository.getWeeklyStatistics(startDate.toString(), endDate.toString())
+    }
+
+
+    fun getTopHabits(): LiveData<List<TopHabit>> {
+        return repository.getTopHabits()
+    }
+
+    // LiveData untuk total streak
+    fun getTotalStreak(): LiveData<Int> {
+        return repository.getTotalStreak()
+    }
+
+//    // LiveData untuk best streak
+//    fun getBestStreak(): LiveData<Int> {
+//        return repository.getBestStreak()
+//    }
+
+    // LiveData untuk total habits done
+    fun getTotalHabitsDone(): LiveData<Int> {
+        return repository.getTotalHabitsDone()
+    }
 }
