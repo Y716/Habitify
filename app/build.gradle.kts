@@ -12,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.habitify"
-        minSdk = 24
+        minSdk = 25
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -70,6 +70,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
+    implementation(libs.androidx.compose.material)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

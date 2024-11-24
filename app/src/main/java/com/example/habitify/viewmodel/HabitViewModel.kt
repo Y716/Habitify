@@ -90,4 +90,10 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
     fun getTotalHabitsDone(): LiveData<Int> {
         return repository.getTotalHabitsDone()
     }
+
+    fun deleteHabit(habitId: Int) {
+        viewModelScope.launch {
+            repository.deleteHabit(habitId)
+        }
+    }
 }
