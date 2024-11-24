@@ -56,4 +56,10 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
         }
     }
 
+    fun deleteHabit(habitId: Int) {
+        viewModelScope.launch {
+            repository.deleteHabit(habitId)
+        }
+    }
+
 }

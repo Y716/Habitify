@@ -48,6 +48,10 @@ class HabitRepository(private val habitDAO: HabitDAO) {
         }
     }
 
+    suspend fun deleteHabit(habitId: Int) {
+        habitDAO.deleteHabitById(habitId)
+    }
+
 
     // Add a habit and return its ID
     suspend fun addHabitAndGetId(habit: Habit): Int {

@@ -1,6 +1,7 @@
 package com.example.habitify.pages
 
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,12 +17,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.BarChart
@@ -46,10 +44,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.times
 import androidx.navigation.NavController
 import com.example.habitify.AuthViewModel
 import com.example.habitify.data.model.local.Habit
@@ -63,6 +58,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.foundation.border
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -355,6 +352,9 @@ fun HabitListSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
                     isCompleted = status?.isCompleted ?: false,
                     onToggle = { isCompleted ->
                         viewModel.toggleHabitCompletion(habit.id, selectedDate, isCompleted)
+                    },
+                    onDelete = {
+                        viewModel.deleteHabit(habit.id) // Call deleteHabit from ViewModel
                     }
                 )
                 if (habitsWithStatus.last() != (habit to status)) {
@@ -366,32 +366,47 @@ fun HabitListSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
 }
 
 
+
 @Composable
-fun HabitItem(habit: Habit, isCompleted: Boolean, onToggle: (Boolean) -> Unit) {
+fun HabitItem(habit: Habit, isCompleted: Boolean, onToggle: (Boolean) -> Unit, onDelete: () -> Unit) {
+    val context = LocalContext.current
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(48.dp),
+            .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = habit.title,
-            style = MaterialTheme.typography.bodyLarge,
-            color = Color(0xFF212121)
-        )
-        Switch(
-            checked = isCompleted,
-            onCheckedChange = onToggle,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color(0xFF1976D2),
-                checkedTrackColor = Color(0xFF90CAF9),
-                uncheckedThumbColor = Color.White,
-                uncheckedTrackColor = Color(0xFFE0E0E0)
+        Text(text = habit.title, style = MaterialTheme.typography.bodyMedium)
+
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            // Toggle switch
+            Switch(
+                checked = isCompleted,
+                onCheckedChange = onToggle,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = Color(0xFF1976D2),
+                    checkedTrackColor = Color(0xFF90CAF9),
+                    uncheckedThumbColor = Color.White,
+                    uncheckedTrackColor = Color(0xFFE0E0E0)
+                )
             )
-        )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // Delete button
+            IconButton(onClick = {
+                onDelete()
+                Toast.makeText(context, "${habit.title} deleted", Toast.LENGTH_SHORT).show()
+            }) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Habit", tint = Color.Red)
+            }
+        }
     }
 }
+
+
 
 
 
@@ -468,5 +483,3 @@ fun BottomBar(navController: NavController) {
         )
     }
 }
-
-
