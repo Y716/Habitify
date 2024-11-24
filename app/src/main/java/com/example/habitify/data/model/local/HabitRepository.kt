@@ -33,16 +33,21 @@ class HabitRepository(private val habitDAO: HabitDAO) {
         habitDAO.insertHabit(habit)
     }
 
-    suspend fun updateHabitStatus(habitId: Int, date: String, isCompleted: Boolean) {
-        val existingStatus = habitDAO.getHabitStatusForDate(date).value?.find { it.habitId == habitId }
+    suspend fun toggleHabitCompletion(habitId: Int, date: String, isCompleted: Boolean) {
+        val existingStatus = habitDAO.getHabitStatusForDateAndHabitId(habitId, date)
         if (existingStatus != null) {
-            habitDAO.updateHabitStatus(existingStatus.id, isCompleted)
+            habitDAO.updateHabitStatus(existingStatus.copy(isCompleted = isCompleted))
         } else {
             habitDAO.insertHabitStatus(
-                HabitStatus(habitId = habitId, date = date, isCompleted = isCompleted)
+                HabitStatus(
+                    habitId = habitId,
+                    isCompleted = isCompleted,
+                    date = date
+                )
             )
         }
     }
+
 
     // Add a habit and return its ID
     suspend fun addHabitAndGetId(habit: Habit): Int {

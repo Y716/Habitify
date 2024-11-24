@@ -41,9 +41,10 @@ class HabitViewModel(private val repository: HabitRepository) : ViewModel() {
 
     fun toggleHabitCompletion(habitId: Int, date: LocalDate, isCompleted: Boolean) {
         viewModelScope.launch {
-            repository.updateHabitStatus(habitId, date.toString(), isCompleted)
+            repository.toggleHabitCompletion(habitId, date.toString(), isCompleted)
         }
     }
+
 
     fun addHabitWithStatus(title: String, date: String) {
         viewModelScope.launch {

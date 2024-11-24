@@ -6,6 +6,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface HabitDAO {
@@ -38,4 +39,10 @@ interface HabitDAO {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHabitStatus(habitStatus: HabitStatus)
+
+    @Query("SELECT * FROM habit_status WHERE habitId = :habitId AND date = :date LIMIT 1")
+    suspend fun getHabitStatusForDateAndHabitId(habitId: Int, date: String): HabitStatus?
+
+    @Update
+    suspend fun updateHabitStatus(habitStatus: HabitStatus)
 }

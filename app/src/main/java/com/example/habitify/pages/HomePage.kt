@@ -335,6 +335,7 @@ fun DailyProgressSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HabitListSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
     val habitsWithStatus by viewModel.getHabitsForDate(selectedDate).observeAsState(emptyList())
@@ -363,6 +364,7 @@ fun HabitListSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
         }
     }
 }
+
 
 @Composable
 fun HabitItem(habit: Habit, isCompleted: Boolean, onToggle: (Boolean) -> Unit) {
