@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -73,17 +76,20 @@ import java.time.LocalDate
 fun StatisticsPage(viewModel: HabitViewModel, navController: NavController) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    Scaffold(
-        bottomBar = { BottomBar(navController = navController) }
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color(0xFFF8F9FA))
-                .padding(paddingValues),
+                .padding(
+                start = 16.dp,
+                end = 16.dp,
+                top = paddingValues.calculateTopPadding(),
+                bottom = 0.dp // Remove the bottom padding
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             state = rememberLazyListState()
-        ) {
+        ){
             // Overview Statistics Section
             item {
                 Column(
@@ -180,9 +186,6 @@ fun StatisticsPage(viewModel: HabitViewModel, navController: NavController) {
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-            }
         }
     }
 }

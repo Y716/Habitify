@@ -104,7 +104,7 @@ fun HomePage(modifier: Modifier, navController: NavController, authViewModel: Au
             }
         }
 
-        BottomBar(navController = navController)
+//        BottomBar(navController = navController)
     }
 }
 
@@ -421,59 +421,6 @@ fun AddHabitButton(onClick: () -> Unit) {
             text = "Tambah Habit",
             style = MaterialTheme.typography.titleMedium,
             color = Color.White
-        )
-    }
-}
-
-
-@Composable
-fun BottomBar(navController: NavController) {
-    NavigationBar(
-        containerColor = Color.White,
-        modifier = Modifier.border(
-            width = 1.dp,
-            color = Color(0xFFE0E0E0),
-            shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp)
-        )
-    ) {
-        NavigationBarItem(
-            selected = false,
-            onClick = { navController.navigate("homepage") },
-            icon = { Icon(Icons.Default.Home, contentDescription = "Home") },
-            label = { Text("Home") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFF1976D2),
-                unselectedIconColor = Color(0xFF757575),
-                selectedTextColor = Color(0xFF1976D2),
-                unselectedTextColor = Color(0xFF757575),
-                indicatorColor = Color(0xFFE3F2FD)
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { navController.navigate("statistics_page") },
-            icon = { Icon(Icons.Default.BarChart, contentDescription = "Statistics") },
-            label = { Text("Statistics") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFF1976D2),
-                unselectedIconColor = Color(0xFF757575),
-                selectedTextColor = Color(0xFF1976D2),
-                unselectedTextColor = Color(0xFF757575),
-                indicatorColor = Color(0xFFE3F2FD)
-            )
-        )
-        NavigationBarItem(
-            selected = false,
-            onClick = { navController.navigate("pomodoro_clock") },
-            icon = { Icon(Icons.Default.Timer, contentDescription = "Pomodoro") },
-            label = { Text("Pomodoro") },
-            colors = NavigationBarItemDefaults.colors(
-                selectedIconColor = Color(0xFF1976D2),
-                unselectedIconColor = Color(0xFF757575),
-                selectedTextColor = Color(0xFF1976D2),
-                unselectedTextColor = Color(0xFF757575),
-                indicatorColor = Color(0xFFE3F2FD)
-            )
         )
     }
 }
