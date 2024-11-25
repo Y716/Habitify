@@ -8,18 +8,21 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -39,6 +42,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -69,85 +73,117 @@ import java.time.LocalDate
 fun StatisticsPage(viewModel: HabitViewModel, navController: NavController) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFF8F9FA)) // Background untuk keseluruhan halaman
-            .padding(top = 16.dp),
-        verticalArrangement = Arrangement.Top // Mengatur tata letak ke atas
-    ) {
-        // Statistik Overview (Total Streak & Total Habits Done)
-        OverviewStatistics(viewModel = viewModel)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Bagian header bulan
-        Text(
-            text = "Statistik Bulanan",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(horizontal = 16.dp)
-        )
-
-        MonthlyCalendar(
-            onDateSelected = { date -> selectedDate = date },
-            viewModel = viewModel,
-            selectedDate = selectedDate
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Bagian konten scrollable
+    Scaffold(
+        bottomBar = { BottomBar(navController = navController) }
+    ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
-                .weight(1f)
-                .padding(horizontal = 16.dp), // Padding horizontal untuk konten
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxSize()
+                .background(Color(0xFFF8F9FA))
+                .padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            state = rememberLazyListState()
         ) {
-            // Statistik Mingguan
+            // Overview Statistics Section
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    OverviewStatistics(viewModel = viewModel)
+                }
+            }
+
+            // Monthly Statistics Section
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                    ) {
                         Text(
-                            text = "Statistik Mingguan",
+                            text = "Statistik Bulanan",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp)
                         )
-                        WeeklyStatistics(viewModel = viewModel, selectedMonth = selectedDate.withDayOfMonth(1))
+                        MonthlyCalendar(
+                            onDateSelected = { date -> selectedDate = date },
+                            viewModel = viewModel,
+                            selectedDate = selectedDate
+                        )
                     }
                 }
             }
 
-            // Habit Terbaik
+            // Weekly Statistics Section
             item {
                 Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(12.dp),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                    ) {
+                        Text(
+                            text = "Statistik Mingguan",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                        WeeklyStatistics(
+                            viewModel = viewModel,
+                            selectedMonth = selectedDate.withDayOfMonth(1)
+                        )
+                    }
+                }
+            }
+
+            // Top Habits Section
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .padding(16.dp)
+                            .fillMaxWidth()
+                    ) {
                         Text(
                             text = "Habit Terbaik",
                             style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp)
                         )
                         TopHabits(viewModel = viewModel)
                     }
                 }
             }
 
-            // Spacer tambahan agar tidak tertutupi BottomBar
             item {
-                Spacer(modifier = Modifier.height(64.dp))
+                Spacer(modifier = Modifier.height(16.dp))
             }
         }
-
-        // BottomBar untuk navigasi
-        BottomBar(navController = navController)
     }
 }
 
@@ -155,52 +191,56 @@ fun StatisticsPage(viewModel: HabitViewModel, navController: NavController) {
 
 @Composable
 fun OverviewStatistics(viewModel: HabitViewModel) {
-    // Ambil data dari ViewModel
-    val totalStreak by viewModel.getTotalStreak().observeAsState(0) // Total streak dari ViewModel
-    val totalHabitsDone by viewModel.getTotalHabitsDone().observeAsState(0) // Total habits done dari ViewModel
+    val totalStreak by viewModel.getTotalStreak().observeAsState(0)
+    val totalHabitsDone by viewModel.getTotalHabitsDone().observeAsState(0)
 
-    // Tampilan Statistik menggunakan Card
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceEvenly
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Card untuk Total Streak Days
         StatCard(
+            modifier = Modifier.weight(1f),
             title = "Total Streak Days",
             value = "$totalStreak days",
             icon = Icons.Default.CalendarToday,
-            iconTint = MaterialTheme.colorScheme.primary // Gunakan warna tema
+            iconTint = MaterialTheme.colorScheme.primary
         )
 
-        Spacer(modifier = Modifier.width(8.dp))
-
-        // Card untuk Total Habits Done
         StatCard(
+            modifier = Modifier.weight(1f),
             title = "Total Habits Done",
             value = "$totalHabitsDone",
             icon = Icons.Default.Check,
-            iconTint = MaterialTheme.colorScheme.secondary // Gunakan warna tema sekunder
+            iconTint = MaterialTheme.colorScheme.secondary
         )
     }
 }
 
 @Composable
-fun StatCard(title: String, value: String, icon: ImageVector, iconTint: Color) {
+fun StatCard(
+    modifier: Modifier = Modifier,
+    title: String,
+    value: String,
+    icon: ImageVector,
+    iconTint: Color
+) {
     Card(
-        modifier = Modifier
-            .width(150.dp) // Ukuran lebar yang seragam
-            .height(120.dp), // Tinggi yang cukup untuk menampilkan konten
-        shape = RoundedCornerShape(12.dp), // Membuat sudut membulat
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFCCC2DC)) // Warna abu-abu terang
+        modifier = modifier
+            .height(120.dp),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = Color(0xFFEDE7F6)
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.Start
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -214,20 +254,20 @@ fun StatCard(title: String, value: String, icon: ImageVector, iconTint: Color) {
                 )
                 Text(
                     text = title,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurface // Warna teks sesuai tema
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
             Text(
                 text = value,
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onSurface // Warna teks sesuai tema
+                style = MaterialTheme.typography.titleLarge.copy(
+                    fontWeight = FontWeight.Bold
+                ),
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
 }
-
-
 
 
 
@@ -278,7 +318,7 @@ fun MonthlyCalendar(
         // Tampilkan Grid Kalender
         LazyVerticalGrid(
             columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(7),
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().heightIn(max = 300.dp),
             contentPadding = PaddingValues(4.dp)
         ) {
             items(daysInMonth) { date ->
@@ -330,11 +370,6 @@ fun MonthlyCalendar(
                         color = Color(0xFF64B5F6),
                         trackColor = Color(0xFFB3E5FC)
                     )
-
-//                    Spacer(modifier = Modifier.height(16.dp))
-////
-////                    // Heatmap Legend
-////                    HeatmapLegend()
                 }
             }
         }
