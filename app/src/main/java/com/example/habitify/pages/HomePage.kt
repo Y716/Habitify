@@ -199,12 +199,7 @@ fun DateSection(
             daysOfWeek.forEach { date ->
                 val isToday = date == today
                 val isSelected = date == selectedDate
-
-                // Fetch habits and their statuses for this date
-                val habitsWithStatus by viewModel.getHabitsForDate(date).observeAsState(emptyList())
-                val totalHabits = habitsWithStatus.size
-                val completedHabits = habitsWithStatus.count { it.second?.isCompleted == true }
-                val completionRate = if (totalHabits > 0) completedHabits.toFloat() / totalHabits else 0f
+                val isFuture = date > today // Check if the date is in the future
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -212,7 +207,6 @@ fun DateSection(
                         .width(48.dp)
                         .padding(horizontal = 2.dp)
                 ) {
-                    // Day of the week (e.g., Mon, Tue)
                     Text(
                         text = date.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, Locale.getDefault()),
                         style = MaterialTheme.typography.bodySmall,
@@ -221,20 +215,21 @@ fun DateSection(
 
                     Spacer(modifier = Modifier.height(4.dp))
 
-                    // Date number (Clickable to select a specific date)
+                    // Date number (disable future dates)
                     Box(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
                             .background(
                                 when {
-                                    isToday -> Color.Cyan // Highlight today's date
-                                    isSelected -> Color(0xFF90CAF9) // Highlight the selected date
-                                    else -> Color.LightGray // Default color
+                                    isFuture -> Color.LightGray // Future dates are light gray
+                                    isToday -> Color.Cyan
+                                    isSelected -> Color(0xFF90CAF9)
+                                    else -> Color.LightGray
                                 }
                             )
-                            .clickable {
-                                onDateSelected(date) // Pass the selected date to the parent
+                            .clickable(enabled = !isFuture) { // Disable clicking on future dates
+                                if (!isFuture) onDateSelected(date)
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -243,19 +238,6 @@ fun DateSection(
                             style = MaterialTheme.typography.bodySmall
                         )
                     }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    // Completion indicator (progress bar below the date)
-                    LinearProgressIndicator(
-                        progress = completionRate,
-                        modifier = Modifier
-                            .width(36.dp)
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp)),
-                        color = Color(0xFF64B5F6), // Progress color
-                        trackColor = Color(0xFFB3E5FC) // Background track color
-                    )
                 }
             }
         }
@@ -263,6 +245,8 @@ fun DateSection(
 }
 
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DailyProgressSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
     val habitsWithStatus by viewModel.getHabitsForDate(selectedDate).observeAsState(emptyList())
@@ -309,13 +293,13 @@ fun DailyProgressSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 LinearProgressIndicator(
-                    progress = progress,
+                    progress = { progress },
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(8.dp)
                         .clip(RoundedCornerShape(4.dp)),
                     color = Color(0xFF64B5F6),
-                    trackColor = Color(0xFFE3F2FD)
+                    trackColor = Color(0xFFE3F2FD),
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))
@@ -335,6 +319,8 @@ fun DailyProgressSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HabitListSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
+    val today = LocalDate.now()
+    val isFutureDate = selectedDate > today // Check if the selected date is in the future
     val habitsWithStatus by viewModel.getHabitsForDate(selectedDate).observeAsState(emptyList())
 
     Card(
@@ -351,11 +337,12 @@ fun HabitListSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
                     habit = habit,
                     isCompleted = status?.isCompleted ?: false,
                     onToggle = { isCompleted ->
-                        viewModel.toggleHabitCompletion(habit.id, selectedDate, isCompleted)
+                        if (!isFutureDate) viewModel.toggleHabitCompletion(habit.id, selectedDate, isCompleted)
                     },
                     onDelete = {
-                        viewModel.deleteHabit(habit.id) // Call deleteHabit from ViewModel
-                    }
+                        if (!isFutureDate) viewModel.deleteHabit(habit.id)
+                    },
+                    isEditable = !isFutureDate
                 )
                 if (habitsWithStatus.last() != (habit to status)) {
                     Divider(color = Color(0xFFE0E0E0))
@@ -367,8 +354,9 @@ fun HabitListSection(viewModel: HabitViewModel, selectedDate: LocalDate) {
 
 
 
+
 @Composable
-fun HabitItem(habit: Habit, isCompleted: Boolean, onToggle: (Boolean) -> Unit, onDelete: () -> Unit) {
+fun HabitItem(habit: Habit, isCompleted: Boolean, onToggle: (Boolean) -> Unit, onDelete: () -> Unit, isEditable: Boolean) {
     val context = LocalContext.current
 
     Row(
@@ -381,10 +369,11 @@ fun HabitItem(habit: Habit, isCompleted: Boolean, onToggle: (Boolean) -> Unit, o
         Text(text = habit.title, style = MaterialTheme.typography.bodyMedium)
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            // Toggle switch
+            // Toggle switch (disable for future dates)
             Switch(
                 checked = isCompleted,
-                onCheckedChange = onToggle,
+                onCheckedChange = { if (isEditable) onToggle(it) },
+                enabled = isEditable,
                 colors = SwitchDefaults.colors(
                     checkedThumbColor = Color(0xFF1976D2),
                     checkedTrackColor = Color(0xFF90CAF9),
@@ -395,12 +384,17 @@ fun HabitItem(habit: Habit, isCompleted: Boolean, onToggle: (Boolean) -> Unit, o
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // Delete button
-            IconButton(onClick = {
-                onDelete()
-                Toast.makeText(context, "${habit.title} deleted", Toast.LENGTH_SHORT).show()
-            }) {
-                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Habit", tint = Color.Red)
+            // Delete button (disable for future dates)
+            IconButton(
+                onClick = {
+                    if (isEditable) {
+                        onDelete()
+                        Toast.makeText(context, "${habit.title} deleted", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                enabled = isEditable
+            ) {
+                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete Habit", tint = if (isEditable) Color.Red else Color.Gray)
             }
         }
     }
