@@ -89,31 +89,37 @@ interface HabitDAO {
     fun getAllHabitStatuses(): LiveData<List<HabitStatus>>
 
     @Query("""
-        SELECT COUNT(*) 
-        FROM (
-            SELECT date
-            FROM habit_status
-            WHERE date < DATE('now')
-            GROUP BY date
-            HAVING COUNT(habitId) = SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END)
-            ORDER BY date DESC
-        ) streak_days
-        WHERE streak_days.date >= (
-            SELECT MIN(date)
-            FROM (
-                SELECT date, 
-                       COUNT(habitId) AS totalHabits,
-                       SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END) AS completedHabits
-                FROM habit_status
-                WHERE date < DATE('now')
-                GROUP BY date
-                HAVING COUNT(habitId) != SUM(CASE WHEN isCompleted = 1 THEN 1 ELSE 0 END)
-                ORDER BY date DESC
-                LIMIT 1
-            ) non_streak_date
+        WITH total_habits AS (
+            SELECT COUNT(*) AS total_count FROM habits
+        ),
+        completed_dates AS (
+            SELECT date,
+                CASE WHEN (
+                    SELECT COUNT(DISTINCT habitId)
+                    FROM habit_status
+                    WHERE date = hs.date AND isCompleted = 1
+                ) = (SELECT total_count FROM total_habits)
+                THEN 1 ELSE 0 END AS is_full
+            FROM (SELECT DISTINCT date FROM habit_status) hs
+        ),
+        streak_dates AS (
+            SELECT date, is_full
+            FROM completed_dates
+            WHERE date = DATE('now', 'localtime') AND is_full = 1
+            UNION ALL
+            SELECT cd.date, cd.is_full
+            FROM completed_dates cd
+            JOIN streak_dates sd ON cd.date = DATE(sd.date, '-1 day')
+            WHERE cd.is_full = 1
         )
+        SELECT COUNT(*) AS total_streak_days
+        FROM streak_dates
+        WHERE is_full = 1;
     """)
     fun getTotalStreakDays(): LiveData<Int>
+
+
+
 
 
 

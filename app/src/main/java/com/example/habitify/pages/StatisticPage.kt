@@ -188,7 +188,6 @@ fun StatisticsPage(viewModel: HabitViewModel, navController: NavController) {
 }
 
 
-
 @Composable
 fun OverviewStatistics(viewModel: HabitViewModel) {
     val totalStreak by viewModel.getTotalStreak().observeAsState(0)
@@ -203,7 +202,7 @@ fun OverviewStatistics(viewModel: HabitViewModel) {
         StatCard(
             modifier = Modifier.weight(1f),
             title = "Total Streak Days",
-            value = "$totalStreak days",
+            value = "${totalStreak} days" + if (totalStreak > 3) " 🔥" else "",
             icon = Icons.Default.CalendarToday,
             iconTint = MaterialTheme.colorScheme.primary
         )
@@ -240,9 +239,10 @@ fun StatCard(
                 .fillMaxSize()
                 .padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.Start
+            horizontalAlignment = Alignment.CenterHorizontally // Changed to center
         ) {
             Row(
+                modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -263,7 +263,8 @@ fun StatCard(
                 style = MaterialTheme.typography.titleLarge.copy(
                     fontWeight = FontWeight.Bold
                 ),
-                color = MaterialTheme.colorScheme.onSurface
+                color = MaterialTheme.colorScheme.onSurface,
+                textAlign = TextAlign.Center // Added text alignment
             )
         }
     }
