@@ -62,13 +62,13 @@ interface HabitDAO {
 
     @Query("""
         SELECT h.title AS habitTitle, 
-               COUNT(*) AS completedCount
-        FROM habit_status hs
-        INNER JOIN habits h ON hs.habitId = h.id
-        WHERE hs.isCompleted = 1 AND hs.date BETWEEN :startDate AND :endDate
-        GROUP BY hs.habitId
+               COALESCE(COUNT(CASE WHEN hs.isCompleted = 1 THEN 1 END), 0) AS completedCount
+        FROM habits h
+        LEFT JOIN habit_status hs ON hs.habitId = h.id AND hs.date BETWEEN :startDate AND :endDate
+        GROUP BY h.id
     """)
     fun getWeeklyStatistics(startDate: String, endDate: String): LiveData<List<HabitWeeklyStat>>
+
 
 
     @Query("""
