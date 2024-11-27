@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import com.example.habitify.pages.AddHabitPage
 import com.example.habitify.pages.HomePage
 import com.example.habitify.pages.LoginPage
+import com.example.habitify.pages.PomodoroPage
 import com.example.habitify.pages.RegisterPage
 import com.example.habitify.pages.StatisticsPage
 //import com.example.habitify.pages.StatisticPage
@@ -57,7 +58,7 @@ fun AppNavigation(
             StatisticsPage(viewModel, navController)
         }
         composable("pomodoro_clock") {
-//            PomodoroPage() // Assuming you have this screen
+            PomodoroPage()
         }
         composable("profile") {
 //            ProfilePage() // Placeholder for a profile or logout page
