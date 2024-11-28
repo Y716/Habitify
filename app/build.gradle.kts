@@ -71,6 +71,7 @@ dependencies {
     implementation(libs.androidx.room.common)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.compose.material)
+    implementation(libs.play.services.wallet)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
