@@ -1,4 +1,5 @@
 package com.example.habitify.pages
+import android.media.MediaPlayer
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -11,32 +12,29 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.SkipNext
+import androidx.compose.material.icons.filled.SkipPrevious
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Black
-import androidx.compose.ui.graphics.Color.Companion.Blue
 import androidx.compose.ui.graphics.Color.Companion.Gray
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.wallet.button.ButtonConstants
+import com.example.habitify.R
 import kotlinx.coroutines.delay
 @Composable
 fun PomodoroPage() {
@@ -50,6 +48,79 @@ fun PomodoroPage() {
     var breakInterval by remember { mutableStateOf(5 * 60) }
     var isBreakInterval by remember { mutableStateOf(false) }
     var isTaskCompleted by remember { mutableStateOf(false) }
+    var mediaPlayer: MediaPlayer? = null
+    var currentTrackIndex by remember { mutableStateOf(0) }
+    val trackList =
+        listOf(R.raw.track1, R.raw.track2, R.raw.track3, R.raw.track4, R.raw.track5, R.raw.track6)
+
+    fun formatTime(timeInSeconds: Int): String {
+        val minutes = timeInSeconds / 60
+        val seconds = timeInSeconds % 60
+        return String.format("%02d:%02d", minutes, seconds)
+    }
+
+    val context = LocalContext.current
+
+    // Fungsi Putar Musik
+    fun toggleMusic() {
+        if (isMusicPlaying) {
+            mediaPlayer?.stop()
+            mediaPlayer?.release()
+            mediaPlayer = null
+            isMusicPlaying = false
+        } else {
+            mediaPlayer = MediaPlayer.create(context, trackList[currentTrackIndex])
+            mediaPlayer?.start()
+            isMusicPlaying = true
+            mediaPlayer?.setOnCompletionListener {
+                isMusicPlaying = false
+            }
+        }
+    }
+
+    // Fungsi Next Track
+    fun nextTrack() {
+        if (currentTrackIndex < trackList.size - 1) {
+            currentTrackIndex += 1
+        } else {
+            currentTrackIndex = 0
+        }
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer.create(context, trackList[currentTrackIndex])
+        mediaPlayer?.start()
+        isMusicPlaying = true
+        mediaPlayer?.setOnCompletionListener {
+            isMusicPlaying = false
+        }
+    }
+
+    // Fungsi Track Sebelumnya
+    fun previousTrack() {
+        if (currentTrackIndex > 0) {
+            currentTrackIndex -= 1
+        } else {
+            currentTrackIndex = trackList.size - 1
+        }
+        mediaPlayer?.stop()
+        mediaPlayer?.release()
+        mediaPlayer = MediaPlayer.create(context, trackList[currentTrackIndex])
+        mediaPlayer?.start()
+        isMusicPlaying = true
+        mediaPlayer?.setOnCompletionListener {
+            isMusicPlaying = false
+        }
+    }
+    fun toggleTimer() {
+        if (isPlaying) {
+            isPlaying = false
+            if (isMusicPlaying){
+                toggleMusic()
+            }
+        } else {
+            isPlaying = true
+        }
+    }
 
     LaunchedEffect(isPlaying) {
         while (isPlaying && remainingTime > 0) {
@@ -66,13 +137,10 @@ fun PomodoroPage() {
                 remainingTime = breakInterval
                 isBreakInterval = true
             }
+            if (isMusicPlaying) {
+                toggleMusic()
+            }
         }
-    }
-
-    fun formatTime(timeInSeconds: Int): String {
-        val minutes = timeInSeconds / 60
-        val seconds = timeInSeconds % 60
-        return String.format("%02d:%02d", minutes, seconds)
     }
 
     Column(
@@ -82,6 +150,7 @@ fun PomodoroPage() {
             .padding(top = 25.dp, start = 10.dp, end = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // Task
         if (taskList.isEmpty()) {
             Row(
                 modifier = Modifier
@@ -93,11 +162,14 @@ fun PomodoroPage() {
                 OutlinedTextField(
                     value = taskName,
                     onValueChange = { taskName = it },
-                    label = { Text("Tambah Tugas Baru",
-                        fontSize = 20.sp) },
+                    label = {
+                        Text(
+                            "Tambah Tugas Baru",
+                            fontSize = 20.sp
+                        )
+                    },
                     singleLine = true,
                     modifier = Modifier.weight(1f),
-
                 )
                 Button(
                     onClick = {
@@ -145,7 +217,7 @@ fun PomodoroPage() {
                                 if (taskList.isEmpty()) {
                                     isTaskCompleted = false
                                 }
-                            })  {
+                            }) {
                                 Icon(
                                     imageVector = Icons.Filled.Check,
                                     contentDescription = "Task Completed"
@@ -158,7 +230,8 @@ fun PomodoroPage() {
         }
 
         Spacer(modifier = Modifier.padding(top = 50.dp))
-        // Timer dengan lingkaran
+
+        // Timer Pomodoro
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -167,6 +240,8 @@ fun PomodoroPage() {
         ) {
             Canvas(modifier = Modifier.size(270.dp)) {
                 val sweepAngle = (remainingTime / pomodoroTime.toFloat()) * 360f
+
+                // Progress Circle Background
                 drawArc(
                     color = Color.LightGray,
                     startAngle = -90f,
@@ -175,6 +250,8 @@ fun PomodoroPage() {
                     size = this.size,
                     style = Stroke(width = 10.dp.toPx())
                 )
+
+                // Progress Circle Dinamis
                 if (isPlaying) {
                     drawArc(
                         color = Color(0xFF1976D2),
@@ -182,10 +259,15 @@ fun PomodoroPage() {
                         sweepAngle = sweepAngle,
                         useCenter = false,
                         size = this.size,
-                        style = Stroke(width = 20.dp.toPx())
+                        style = Stroke(
+                            width = 20.dp.toPx(),
+                            cap = StrokeCap.Round
+                        )
                     )
                 }
             }
+
+            // Clock dan Detail Dalam Jam
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -211,32 +293,55 @@ fun PomodoroPage() {
             }
         }
 
-        // Buttons to control Timer and Music (stacked in Column)
+
+        // Button Musik
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            
-            // Putar Musik button
-            Button(
-                onClick = { toggleMusic() },
-                modifier = Modifier.size(150.dp, 40.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.Gray)
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = if (isMusicPlaying) "Hentikan Musik" else "Putar Musik",
-                    color = Color.White,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Normal
-                )
+                IconButton(onClick = { previousTrack() }) {
+                    Icon(
+                        imageVector = Icons.Filled.SkipPrevious,
+                        contentDescription = "Previous Track",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(50.dp),
+                    )
+                }
+                Button(
+                    onClick = { toggleMusic() },
+                    modifier = Modifier.size(170.dp, 40.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color.Gray
+                    )
+                ) {
+                    Text(
+                        text = if (isMusicPlaying) "Hentikan Musik" else "Putar Musik",
+                        color = Color.White,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Normal
+                    )
+                }
+                IconButton(onClick = { nextTrack() }) {
+                    Icon(
+                        imageVector = Icons.Filled.SkipNext,
+                        contentDescription = "Next Track",
+                        tint = Color.Gray,
+                        modifier = Modifier.size(50.dp)
 
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.padding(top = 80.dp))
-            // Start/Pause Timer button
+
+            // Button Timer
             Button(
-                onClick = { isPlaying = !isPlaying },
+                onClick = { toggleTimer() },
                 modifier = Modifier.size(120.dp)
             ) {
                 Icon(
@@ -250,7 +355,6 @@ fun PomodoroPage() {
     }
 }
 
-fun toggleMusic() {
-    TODO("Not yet implemented")
-}
+
+
 
