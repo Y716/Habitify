@@ -29,7 +29,6 @@ fun AppNavigation(
     viewModel: HabitViewModel,
     navController: NavHostController
 ) {
-//    val navController = rememberNavController()
 
     NavHost(
         navController = navController,

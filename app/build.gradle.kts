@@ -72,6 +72,9 @@ dependencies {
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.compose.material)
     implementation(libs.play.services.wallet)
+    implementation(libs.material3)
+    implementation(libs.androidx.navigation.compose.v272)
+
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
