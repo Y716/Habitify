@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
 
-class AuthViewModel : ViewModel() {
+open class AuthViewModel : ViewModel() {
 
     private val auth : FirebaseAuth = FirebaseAuth.getInstance()
 
@@ -25,7 +25,7 @@ class AuthViewModel : ViewModel() {
         }
     }
 
-    fun login(email : String,password : String){
+    open fun login(email : String, password : String){
 
         if(email.isEmpty() || password.isEmpty()){
             _authState.value = AuthState.Error("Email or password can't be empty")

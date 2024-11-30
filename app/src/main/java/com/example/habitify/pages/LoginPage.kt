@@ -1,11 +1,14 @@
 package com.example.habitify.pages
 
+import android.annotation.TargetApi
+import android.content.res.Configuration
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -25,13 +28,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.habitify.AuthState
 import com.example.habitify.AuthViewModel
 
@@ -57,7 +65,7 @@ fun LoginPage(modifier: Modifier, navController: NavController, authViewModel: A
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Text(text = "Login Page", fontSize = 40.sp)
+        Text(text = "Habitify.", fontSize = 40.sp, color = Color.DarkGray, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(40.dp))
 
         OutlinedTextField(
@@ -99,9 +107,10 @@ fun LoginPage(modifier: Modifier, navController: NavController, authViewModel: A
         Button(onClick = {
             authViewModel.login(email,password)
         },
-            enabled = authState.value != AuthState.Loading
+            enabled = authState.value != AuthState.Loading,
+            modifier = Modifier.width(250.dp)
         ) {
-            Text(text = "Login")
+            Text(text = "Login", fontSize = 15.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.height(3.dp))
         TextButton(onClick = {
@@ -110,8 +119,11 @@ fun LoginPage(modifier: Modifier, navController: NavController, authViewModel: A
             Text(text = "Haven't Register Yet? Sign Up!")
 
         }
-            
+
         }
     }
+
+
+
 
 
